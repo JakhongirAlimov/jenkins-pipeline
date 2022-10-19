@@ -1,0 +1,52 @@
+pipeline {
+    agent{label 'ubuntu'}
+    
+    stages{
+        stage('Docker version'){
+            steps{
+                sh "echo $USER"
+                sh 'docker version'
+            }
+        }
+        stage('Checkout'){
+            steps{
+                git branch: 'main',
+                    url: 'https://github.com/bakavets/docker-lessons.git'
+            }
+        }
+        stage('Test'){
+            steps{
+                dir('lesson-1'){
+                    sh "ls -la"
+                    sh "pwd"
+                }
+                    sh "ls -la"
+                    sh "pwd"
+                }
+                
+            }
+       stage('Build docker image'){
+            steps{
+           	    dir('lesson-1'){
+           	    sh 'docker build -t jakhongialimov/jenkins-image:0.5 .'
+           	    }
+                }
+          }
+        stage('Push docker image to DockerHub'){
+            steps{
+                withDockerRegistry(credentialsId: 'jenkins-slave-cred-docker', url: 'https://index.docker.io/v1/'){
+         	        sh  '''
+         		        docker push jakhongialimov/jenkins-image:0.5
+         		
+         	            '''		
+         	        }
+              }
+         }
+        stage('Delete docker locally') {
+            steps{
+                sh 'docker rmi jakhongialimov/jenkins-image:0.5'
+            }
+        } 
+    
+     } 
+}
